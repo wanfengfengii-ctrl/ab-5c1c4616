@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>纸本修复 · 雾化管路配平</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>纸本修复室 · 雾化管路配平</h1>
+    <p class="sub">回湿脆化古画前，审核雾化管路能否把规定水量稳定送达每个分区。</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>水源</h2>
+      <div class="form-row">
+        <label>水源编号
+          <input id="sourceId" type="text" value="S" />
+        </label>
+        <label>水源总量（整数）
+          <input id="sourceTotal" type="number" min="0" step="1" value="10" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>分区（2–4 个）</h2>
+      <table class="grid">
+        <thead>
+          <tr><th>编号</th><th>名称</th><th>精确需求量</th><th>操作</th></tr>
+        </thead>
+        <tbody id="zoneBody"></tbody>
+      </table>
+      <button type="button" class="ghost" id="addZone">＋ 增加分区</button>
+    </section>
+
+    <section class="card">
+      <h2>分流节点（0–4 个）</h2>
+      <table class="grid">
+        <thead>
+          <tr><th>编号</th><th>名称</th><th>操作</th></tr>
+        </thead>
+        <tbody id="junctionBody"></tbody>
+      </table>
+      <button type="button" class="ghost" id="addJunction">＋ 增加分流节点</button>
+    </section>
+
+    <section class="card">
+      <h2>管路（4–10 条，按方向连接）</h2>
+      <table class="grid pipes">
+        <thead>
+          <tr>
+            <th>序号</th><th>编号</th><th>起点</th><th>方向</th><th>终点</th>
+            <th>最小量</th><th>最大量</th><th>优选量</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="pipeBody"></tbody>
+      </table>
+      <button type="button" class="ghost" id="addPipe">＋ 增加管路</button>
+      <p class="hint">决胜规则：先最小化相对优选量的绝对偏差和，再按管路录入顺序的流量序列稳定决胜。</p>
+    </section>
+
+    <section class="actions">
+      <button type="button" id="balanceBtn" class="primary">发 起 配 平</button>
+      <button type="button" id="loadDemo" class="ghost">载入示例</button>
+      <span id="formError" class="error-text"></span>
+    </section>
+
+    <section id="result" class="card hidden">
+      <h2>配平结果</h2>
+      <div id="summary"></div>
+      <h3>逐管流量</h3>
+      <table class="grid">
+        <thead>
+          <tr><th>序号</th><th>编号</th><th>起点 → 终点</th><th>流量</th>
+              <th>范围</th><th>优选量</th><th>偏差</th></tr>
+        </thead>
+        <tbody id="pipeResultBody"></tbody>
+      </table>
+      <h3>节点收支</h3>
+      <table class="grid">
+        <thead>
+          <tr><th>编号</th><th>类型</th><th>流入</th><th>流出</th><th>期望值</th><th>状态</th></tr>
+        </thead>
+        <tbody id="nodeResultBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

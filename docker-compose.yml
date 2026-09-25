@@ -1,0 +1,57 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mist-balance-api:latest
+    ports:
+      - "${API_PORT:-8000}:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3); sys.exit(0 if json.load(r)['status']=='ok' else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: mist-balance-web:latest
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # 一次性验收服务：单元测试 + API 业务冒烟，结束后自行退出，
+  # 退出码 0 表示验收通过，非 0 表示失败。
+  # 运行：docker compose run --build verify
+  verify:
+    image: mist-balance-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://api:8000
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo '== [1/2] 单元测试 pytest =='
+        PYTHONPATH=/srv/app python -m pytest tests -q
+        echo '== [2/2] API 业务冒烟 =='
+        python scripts/smoke.py
+        echo 'VERIFY_OK'
